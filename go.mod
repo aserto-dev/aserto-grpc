@@ -5,7 +5,7 @@ go 1.17
 // replace github.com/aserto-dev/go-utils => ../go-utils
 
 require (
-	github.com/aserto-dev/go-utils v0.8.23-0.20220825114336-7ea7d8ffdad4
+	github.com/aserto-dev/go-utils v0.8.24
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
