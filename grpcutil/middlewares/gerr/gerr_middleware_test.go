@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
+	logger "github.com/aserto-dev/aserto-logger"
 	"github.com/aserto-dev/go-utils/cerr"
-	"github.com/aserto-dev/go-utils/logger"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
