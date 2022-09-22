@@ -3,7 +3,7 @@ package metrics
 import (
 	"net/http"
 
-	"github.com/aserto-dev/go-utils/logger"
+	logger "github.com/aserto-dev/aserto-logger"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
