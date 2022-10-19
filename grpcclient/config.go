@@ -18,7 +18,7 @@ type Config struct {
 	Headers          map[string]string `json:"headers"`
 }
 
-func (cfg *Config) ToClientOptions(dop grpcclient.DialOptionsProvider) ([]client.ConnectionOption, error) {
+func (cfg *Config) ToClientOptions(dop DialOptionsProvider) ([]client.ConnectionOption, error) {
 	middleware := request.NewRequestIDMiddleware()
 	options := []client.ConnectionOption{
 		client.WithChainUnaryInterceptor(middleware.UnaryClient()),
