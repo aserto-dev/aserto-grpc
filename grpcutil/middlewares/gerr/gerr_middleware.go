@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aserto-dev/aserto-grpc/authn"
 	"github.com/aserto-dev/aserto-grpc/grpcutil"
-	"github.com/aserto-dev/go-utils/cerr"
+	"github.com/aserto-dev/errors"
 	"github.com/google/uuid"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/rs/zerolog"
@@ -62,12 +63,12 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 		return status.New(codes.Internal, "internal failure to generate an error id, please contact the administrator").Err()
 	}
 
-	asertoErr := cerr.UnwrapAsertoError(handlerErr)
+	asertoErr := errors.UnwrapAsertoError(handlerErr)
 
 	if asertoErr == nil {
-		asertoErr = cerr.ErrUnknown
+		asertoErr = authn.ErrUnknown
 	}
-	asertoErr = asertoErr.Int(grpcutil.HttpStatusErrorMetadata, asertoErr.HttpCode)
+	asertoErr = asertoErr.Int(grpcutil.HttpStatusErrorMetadata, asertoErr.HTTPCode)
 
 	log.Warn().Stack().Err(handlerErr).
 		Str("error-id", errID.String()).
