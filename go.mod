@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/aserto-dev/aserto-go v0.8.14-0.20221018123009-a56db85a7ed3
-	github.com/aserto-dev/errors v0.0.1
+	github.com/aserto-dev/errors v0.0.2
 	github.com/aserto-dev/logger v0.0.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

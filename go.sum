@@ -41,8 +41,8 @@ github.com/alecthomas/units v0.0.0-20190924025748-f65c72e2690d/go.mod h1:rBZYJk5
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
 github.com/aserto-dev/aserto-go v0.8.14-0.20221018123009-a56db85a7ed3 h1:Kp2Ojrem4ixQEQYaxtUiR2RAW6HnQCastADjO3VOJOQ=
 github.com/aserto-dev/aserto-go v0.8.14-0.20221018123009-a56db85a7ed3/go.mod h1:dwAutTKTP8lUjcviItMCJIMRbZ17rsSXp8y4146xB48=
-github.com/aserto-dev/errors v0.0.1 h1:ePJSUeqFtJdlCQ5q96CqYlIfxMskMComVR3FdmlKMgY=
-github.com/aserto-dev/errors v0.0.1/go.mod h1:TBlc5z9t1ClYehyJT614pJ0jknkCFWo7sdyAFkFEndY=
+github.com/aserto-dev/errors v0.0.2 h1:e7LRqs+WMkOl90MFe3lekfd55PJjRI1oIWRnpYsCfzk=
+github.com/aserto-dev/errors v0.0.2/go.mod h1:TBlc5z9t1ClYehyJT614pJ0jknkCFWo7sdyAFkFEndY=
 github.com/aserto-dev/logger v0.0.2 h1:WTDOgLYmIiA1yadwfjDuU/WJH6ndosldzLyOeztW27w=
 github.com/aserto-dev/logger v0.0.2/go.mod h1:8HIZAwlf+Y0V33YnGILYZOtYh1Eue5mz1YNf1XbqPbI=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
