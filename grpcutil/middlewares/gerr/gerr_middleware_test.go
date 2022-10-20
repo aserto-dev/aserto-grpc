@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/aserto-dev/aserto-grpc/authn"
 	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
-	"github.com/aserto-dev/go-utils/cerr"
 	"github.com/aserto-dev/logger"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -16,7 +16,7 @@ import (
 
 func TestUnaryServerWithWrappedError(t *testing.T) {
 	assert := require.New(t)
-	handler := test.NewHandler("output", errors.Wrap(cerr.ErrAlreadyMember, "unimportant error"))
+	handler := test.NewHandler("output", errors.Wrap(authn.ErrAuthenticationFailed, "unimportant error"))
 
 	ctx := grpc.NewContextWithServerTransportStream(
 		test.RequestIDContext(t),
@@ -24,14 +24,14 @@ func TestUnaryServerWithWrappedError(t *testing.T) {
 	)
 	_, err := NewErrorMiddleware().Unary()(ctx, "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
-	assert.Contains(err.Error(), "already a tenant member")
+	assert.Contains(err.Error(), "authentication failed")
 }
 
 func TestUnaryServerWithFields(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		errors.Wrap(cerr.ErrAlreadyMember.Str("my-field", "deadbeef"), "another error"),
+		errors.Wrap(authn.ErrAuthenticationFailed.Str("my-field", "deadbeef"), "another error"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -54,7 +54,7 @@ func TestUnaryServerWithDoubleCerr(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		cerr.ErrSCC.Err(cerr.ErrAlreadyMember.Str("my-field", "deadbeef").Msg("old message")).Msg("new message"),
+		authn.ErrUnknown.Err(authn.ErrAuthenticationFailed.Str("my-field", "deadbeef").Msg("old message")).Msg("new message"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -76,7 +76,7 @@ func TestUnaryServerWithDoubleCerr(t *testing.T) {
 
 func TestSimpleInnerError(t *testing.T) {
 	assert := require.New(t)
-	handler := test.NewHandler("output", cerr.ErrSCC.Err(errors.New("deadbeef")).Msg("failed to setup initial tag"))
+	handler := test.NewHandler("output", authn.ErrUnknown.Err(errors.New("deadbeef")).Msg("failed to setup initial tag"))
 
 	buf := bytes.NewBufferString("")
 	testLogger := logger.TestLogger(buf)
@@ -98,7 +98,7 @@ func TestDirectResult(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		cerr.ErrSCC.Err(cerr.ErrRepoAlreadyConnected).Msg("failed to setup initial tag"),
+		authn.ErrUnknown.Err(authn.ErrAuthenticationFailed).Msg("failed to setup initial tag"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -125,6 +125,6 @@ func TestDirectResult(t *testing.T) {
 	}
 
 	assert.True(errDetailsFound)
-	assert.Contains(s.Message(), "there was an error interacting")
-	assert.Contains(err.Error(), "already been")
+	assert.Contains(s.Message(), "an unknown error has occurred")
+	assert.Contains(err.Error(), "failed to setup initial tag")
 }

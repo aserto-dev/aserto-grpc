@@ -3,7 +3,8 @@ module github.com/aserto-dev/aserto-grpc
 go 1.17
 
 require (
-	github.com/aserto-dev/go-utils v0.8.28
+	github.com/aserto-dev/aserto-go v0.8.14-0.20221018123009-a56db85a7ed3
+	github.com/aserto-dev/errors v0.0.2
 	github.com/aserto-dev/logger v0.0.2
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
@@ -17,7 +18,7 @@ require (
 	github.com/rs/zerolog v1.28.0
 	github.com/stretchr/testify v1.8.0
 	go.opencensus.io v0.23.0
-	google.golang.org/genproto v0.0.0-20220921223823-23cae91e6737
+	google.golang.org/genproto v0.0.0-20220927151529-dcaddaf36704
 	google.golang.org/grpc v1.49.0
 )
 
@@ -29,7 +30,7 @@ require (
 	github.com/goccy/go-json v0.9.7 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/lestrrat-go/backoff/v2 v2.0.8 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.0 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
@@ -48,6 +49,5 @@ require (
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

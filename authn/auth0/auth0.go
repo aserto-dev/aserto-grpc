@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/aserto-dev/go-utils/cerr"
+	"github.com/aserto-dev/aserto-grpc/authn"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/pkg/errors"
@@ -52,7 +52,7 @@ func (a *Authenticator) Authenticate(ctx context.Context, token string) (string,
 
 	accountID, err := a.resolver(ctx, parsedToken.Subject())
 	if err != nil {
-		return "", cerr.ErrAuthenticationFailed.Err(errors.Wrap(err, "unable to resolve identity"))
+		return "", authn.ErrAuthenticationFailed.Err(errors.Wrap(err, "unable to resolve identity"))
 	}
 
 	return accountID, nil
