@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	public_grpcutil "github.com/aserto-dev/aserto-grpc/grpcutil"
+	"github.com/aserto-dev/header"
 	"github.com/google/uuid"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/pkg/errors"
@@ -35,10 +36,10 @@ func (m *RequestIDMiddleware) Unary() grpc.UnaryServerInterceptor {
 			return nil, err
 		}
 
-		newCtx := public_grpcutil.ContextWithRequestID(ctx, id)
+		newCtx := header.ContextWithRequestID(ctx, id)
 
 		if id != "" {
-			err = grpc.SetHeader(newCtx, metadata.Pairs(string(public_grpcutil.HeaderAsertoRequestID), id))
+			err = grpc.SetHeader(newCtx, metadata.Pairs(string(header.HeaderAsertoRequestID), id))
 			if err != nil {
 				return nil, err
 			}
@@ -64,10 +65,10 @@ func (m *RequestIDMiddleware) Stream() grpc.StreamServerInterceptor {
 			return err
 		}
 
-		newCtx := public_grpcutil.ContextWithRequestID(ctx, id)
+		newCtx := header.ContextWithRequestID(ctx, id)
 
 		if id != "" {
-			err = grpc.SetHeader(newCtx, metadata.Pairs(string(public_grpcutil.HeaderAsertoRequestID), id))
+			err = grpc.SetHeader(newCtx, metadata.Pairs(string(header.HeaderAsertoRequestID), id))
 			if err != nil {
 				return err
 			}
@@ -90,9 +91,9 @@ func (m *RequestIDMiddleware) UnaryClient() grpc.UnaryClientInterceptor {
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
 	) error {
-		id := public_grpcutil.ExtractRequestID(ctx)
+		id := header.ExtractRequestID(ctx)
 		if id != "" {
-			ctx = metadata.AppendToOutgoingContext(ctx, string(public_grpcutil.HeaderAsertoRequestID), id)
+			ctx = metadata.AppendToOutgoingContext(ctx, string(header.HeaderAsertoRequestID), id)
 		}
 
 		return invoker(ctx, method, req, reply, cc, opts...)
@@ -110,9 +111,9 @@ func (m *RequestIDMiddleware) StreamClient() grpc.StreamClientInterceptor {
 		streamer grpc.Streamer,
 		opts ...grpc.CallOption,
 	) (grpc.ClientStream, error) {
-		id := public_grpcutil.ExtractRequestID(ctx)
+		id := header.ExtractRequestID(ctx)
 		if id != "" {
-			ctx = metadata.AppendToOutgoingContext(ctx, string(public_grpcutil.HeaderAsertoRequestID), id)
+			ctx = metadata.AppendToOutgoingContext(ctx, string(header.HeaderAsertoRequestID), id)
 		}
 
 		return streamer(ctx, desc, cc, method, opts...)
@@ -128,7 +129,7 @@ func (m *RequestIDMiddleware) requestID(ctx context.Context) (string, error) {
 	incomingID := IncomingRequestID(ctx)
 	if incomingID != "" {
 		incomingID = strings.Split(incomingID, ".")[0]
-		if public_grpcutil.IsValidUUID(incomingID) {
+		if header.IsValidUUID(incomingID) {
 			return incomingID + "." + reqid.String(), nil
 		}
 
@@ -157,14 +158,14 @@ func OutgoingRequestID(ctx context.Context) string {
 }
 
 func requestIDFromMetadata(md metadata.MD) string {
-	header, ok := md[string(public_grpcutil.HeaderAsertoRequestID)]
-	if !ok || len(header) == 0 {
-		header, ok = md[strings.ToLower(string(public_grpcutil.HeaderAsertoRequestID))]
+	headerMetaData, ok := md[string(header.HeaderAsertoRequestID)]
+	if !ok || len(headerMetaData) == 0 {
+		headerMetaData, ok = md[strings.ToLower(string(header.HeaderAsertoRequestID))]
 
-		if !ok || len(header) == 0 {
+		if !ok || len(headerMetaData) == 0 {
 			return ""
 		}
 	}
 
-	return header[0]
+	return headerMetaData[0]
 }

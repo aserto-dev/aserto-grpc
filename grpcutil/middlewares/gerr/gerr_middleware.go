@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/aserto-dev/aserto-grpc/authn"
 	"github.com/aserto-dev/aserto-grpc/grpcutil"
 	"github.com/aserto-dev/errors"
 	"github.com/google/uuid"
@@ -66,9 +65,9 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 	asertoErr := errors.UnwrapAsertoError(handlerErr)
 
 	if asertoErr == nil {
-		asertoErr = authn.ErrUnknown
+		asertoErr = errors.ErrUnknown
 	}
-	asertoErr = asertoErr.Int(grpcutil.HttpStatusErrorMetadata, asertoErr.HTTPCode)
+	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
 
 	log.Warn().Stack().Err(handlerErr).
 		Str("error-id", errID.String()).
