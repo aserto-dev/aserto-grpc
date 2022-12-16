@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/aserto-dev/aserto-grpc/grpcutil"
+	"github.com/aserto-dev/header"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/rs/zerolog"
 	"google.golang.org/grpc"
@@ -28,7 +29,7 @@ func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 
 		apiLogger := m.logger.With().
 			Str("method", method).
-			Fields(grpcutil.KnownContextValueStrings(ctx)).
+			Fields(header.KnownContextValueStrings(ctx)).
 			Logger()
 
 		apiLogger.Trace().Interface("request", req).Msg("grpc call start")
@@ -51,7 +52,7 @@ func (m *TracingMiddleware) Stream() grpc.StreamServerInterceptor {
 		apiLogger := m.logger.With().Str("method", method).Logger()
 
 		apiLogger.Trace().
-			Fields(grpcutil.KnownContextValueStrings(ctx)).
+			Fields(header.KnownContextValueStrings(ctx)).
 			Msg("grpc stream call")
 
 		newCtx := apiLogger.WithContext(ctx)

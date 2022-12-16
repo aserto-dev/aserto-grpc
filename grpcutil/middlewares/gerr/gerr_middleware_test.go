@@ -2,21 +2,27 @@ package gerr
 
 import (
 	"bytes"
+	"net/http"
 	"testing"
 
-	"github.com/aserto-dev/aserto-grpc/authn"
 	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
+	aerr "github.com/aserto-dev/errors"
 	"github.com/aserto-dev/logger"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+)
+
+var (
+	testError = aerr.NewAsertoError("X00000", codes.Internal, http.StatusInternalServerError, "a test error")
 )
 
 func TestUnaryServerWithWrappedError(t *testing.T) {
 	assert := require.New(t)
-	handler := test.NewHandler("output", errors.Wrap(authn.ErrAuthenticationFailed, "unimportant error"))
+	handler := test.NewHandler("output", errors.Wrap(testError, "unimportant error"))
 
 	ctx := grpc.NewContextWithServerTransportStream(
 		test.RequestIDContext(t),
@@ -24,14 +30,14 @@ func TestUnaryServerWithWrappedError(t *testing.T) {
 	)
 	_, err := NewErrorMiddleware().Unary()(ctx, "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
-	assert.Contains(err.Error(), "authentication failed")
+	assert.Contains(err.Error(), "a test error")
 }
 
 func TestUnaryServerWithFields(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		errors.Wrap(authn.ErrAuthenticationFailed.Str("my-field", "deadbeef"), "another error"),
+		errors.Wrap(testError.Str("my-field", "deadbeef"), "another error"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -54,7 +60,7 @@ func TestUnaryServerWithDoubleCerr(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		authn.ErrUnknown.Err(authn.ErrAuthenticationFailed.Str("my-field", "deadbeef").Msg("old message")).Msg("new message"),
+		aerr.ErrUnknown.Err(testError.Str("my-field", "deadbeef").Msg("old message")).Msg("new message"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -76,7 +82,7 @@ func TestUnaryServerWithDoubleCerr(t *testing.T) {
 
 func TestSimpleInnerError(t *testing.T) {
 	assert := require.New(t)
-	handler := test.NewHandler("output", authn.ErrUnknown.Err(errors.New("deadbeef")).Msg("failed to setup initial tag"))
+	handler := test.NewHandler("output", aerr.ErrUnknown.Err(errors.New("deadbeef")).Msg("failed to setup initial tag"))
 
 	buf := bytes.NewBufferString("")
 	testLogger := logger.TestLogger(buf)
@@ -98,7 +104,7 @@ func TestDirectResult(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		authn.ErrUnknown.Err(authn.ErrAuthenticationFailed).Msg("failed to setup initial tag"),
+		aerr.ErrUnknown.Err(testError).Msg("failed to setup initial tag"),
 	)
 
 	buf := bytes.NewBufferString("")
