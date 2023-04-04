@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/aserto-dev/logger"
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
@@ -9,6 +10,10 @@ import (
 	"github.com/rs/zerolog"
 	"go.opencensus.io/zpages"
 	"google.golang.org/grpc"
+)
+
+const (
+	ReadHeaderTimeout = time.Second * 60
 )
 
 type Server struct {
@@ -27,9 +32,10 @@ func NewServer(cfg *Config, log *zerolog.Logger) *Server {
 
 	newLogger := log.With().Str("source", "metrics").Logger()
 	httpServer := &http.Server{
-		ErrorLog: logger.NewSTDLogger(&newLogger),
-		Addr:     cfg.ListenAddress,
-		Handler:  mux,
+		ErrorLog:          logger.NewSTDLogger(&newLogger),
+		Addr:              cfg.ListenAddress,
+		Handler:           mux,
+		ReadHeaderTimeout: ReadHeaderTimeout,
 	}
 
 	return &Server{http: httpServer, cfg: cfg}

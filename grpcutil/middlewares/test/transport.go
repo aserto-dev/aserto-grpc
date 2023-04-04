@@ -37,18 +37,18 @@ func ServerStream(ctx context.Context) *TestServerStream {
 	return &TestServerStream{ctx: ctx}
 }
 
-func (ss *TestServerStream) Context() context.Context {
-	return ss.ctx
+func (ts *TestServerStream) Context() context.Context {
+	return ts.ctx
 }
 
-func (ss *TestServerStream) SendMsg(m interface{}) error {
+func (ts *TestServerStream) SendMsg(m interface{}) error {
 	return nil
 }
 
-func (f *TestServerStream) RecvMsg(m interface{}) error {
+func (ts *TestServerStream) RecvMsg(m interface{}) error {
 	return nil
 }
 
-func (f *TestServerStream) Method() string {
+func (ts *TestServerStream) Method() string {
 	return ""
 }

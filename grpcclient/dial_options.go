@@ -18,7 +18,7 @@ func NewDialOptionsProvider() DialOptionsProvider {
 			return nil, errors.New("both client cert and key must be specified, or both must be empty")
 		}
 
-		dialopts := []grpc.DialOption{}
+		dialOpts := []grpc.DialOption{}
 
 		if cfg.ClientCertPath != "" {
 			certificate, err := tls.LoadX509KeyPair(cfg.ClientCertPath, cfg.ClientKeyPath)
@@ -31,7 +31,7 @@ func NewDialOptionsProvider() DialOptionsProvider {
 				MinVersion:   tls.VersionTLS12,
 			}
 
-			dialopts = append(dialopts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+			dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 		}
 
 		var pairs []string
@@ -40,19 +40,18 @@ func NewDialOptionsProvider() DialOptionsProvider {
 		}
 
 		if pairs != nil {
-			dialopts = append(dialopts, grpc.WithUnaryInterceptor(
-				func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+			dialOpts = append(dialOpts,
+				grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 					ctx = metadata.AppendToOutgoingContext(ctx, pairs...)
 					return invoker(ctx, method, req, reply, cc, opts...)
-				}))
-
-			dialopts = append(dialopts, grpc.WithStreamInterceptor(
-				func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+				}),
+				grpc.WithStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 					ctx = metadata.AppendToOutgoingContext(ctx, pairs...)
 					return streamer(ctx, desc, cc, method, opts...)
-				}))
+				}),
+			)
 		}
 
-		return dialopts, nil
+		return dialOpts, nil
 	}
 }
