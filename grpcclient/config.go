@@ -1,8 +1,8 @@
 package grpcclient
 
 import (
-	"github.com/aserto-dev/aserto-go/client"
 	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/request"
+	"github.com/aserto-dev/go-aserto/client"
 	"github.com/pkg/errors"
 )
 

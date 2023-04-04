@@ -1,16 +1,22 @@
-package request
+package request_test
 
 import (
 	"context"
 	"strings"
 	"testing"
 
+	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/request"
 	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
 	"github.com/aserto-dev/header"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+)
+
+const (
+	output        string = "output"
+	testRequestID string = "xyz"
 )
 
 var (
@@ -34,11 +40,11 @@ func TestUnaryServerWithoutRequestID(t *testing.T) {
 			t.Errorf("expect requestID to %q, but got %q", want, got)
 		}
 
-		return "output", nil
+		return output, nil
 	}
 
 	ctx := grpc.NewContextWithServerTransportStream(context.Background(), test.ServerTransportStream(""))
-	_, err := NewRequestIDMiddleware().Unary()(ctx, "xyz", unaryInfo, unaryHandler)
+	_, err := request.NewRequestIDMiddleware().Unary()(ctx, testRequestID, unaryInfo, unaryHandler)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -51,7 +57,7 @@ func TestUnaryServerWithRequestID(t *testing.T) {
 
 	unaryHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		assert.True(strings.HasPrefix(header.ExtractRequestID(ctx), requestID.String()))
-		return "output", nil
+		return output, nil
 	}
 
 	ctx := context.Background()
@@ -59,7 +65,7 @@ func TestUnaryServerWithRequestID(t *testing.T) {
 	ctx = grpc.NewContextWithServerTransportStream(ctx, test.ServerTransportStream(""))
 	ctx = metadata.NewIncomingContext(ctx, md)
 
-	_, err = NewRequestIDMiddleware().Unary()(ctx, "xyz", unaryInfo, unaryHandler)
+	_, err = request.NewRequestIDMiddleware().Unary()(ctx, testRequestID, unaryInfo, unaryHandler)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -80,14 +86,14 @@ func TestUnaryServerWithRequestIDChain(t *testing.T) {
 		if got, want := requestIDs[0], requestID; got != want.String() {
 			t.Errorf("expect first request id to %q, but got %q", want, got)
 		}
-		return "output", nil
+		return output, nil
 	}
 
 	ctx := context.Background()
 	md := metadata.Pairs(string(header.HeaderAsertoRequestID), requestID.String())
 	ctx = grpc.NewContextWithServerTransportStream(ctx, test.ServerTransportStream(""))
 	ctx = metadata.NewIncomingContext(ctx, md)
-	_, err = NewRequestIDMiddleware().Unary()(ctx, "xyz", unaryInfo, unaryHandler)
+	_, err = request.NewRequestIDMiddleware().Unary()(ctx, testRequestID, unaryInfo, unaryHandler)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -95,20 +101,20 @@ func TestUnaryServerWithRequestIDChain(t *testing.T) {
 
 func TestUnaryServerWithValidator(t *testing.T) {
 	assert := require.New(t)
-	requestID := "xyz"
+	requestID := testRequestID
 
 	unaryHandler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		if got, want := header.ExtractRequestID(ctx), requestID; got == want {
 			t.Errorf("original request id should be invalid")
 		}
-		return "output", nil
+		return output, nil
 	}
 
 	ctx := context.Background()
 	md := metadata.Pairs(string(header.HeaderAsertoRequestID), requestID)
 	ctx = metadata.NewIncomingContext(ctx, md)
 	ctx = grpc.NewContextWithServerTransportStream(ctx, test.ServerTransportStream(""))
-	_, err := NewRequestIDMiddleware().Unary()(ctx, "xyz", unaryInfo, unaryHandler)
+	_, err := request.NewRequestIDMiddleware().Unary()(ctx, testRequestID, unaryInfo, unaryHandler)
 
 	assert.NoError(err)
 }
@@ -119,7 +125,7 @@ func TestUnaryClient(t *testing.T) {
 	assert.NoError(err)
 
 	unaryInvoker := func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, opts ...grpc.CallOption) error {
-		id := OutgoingRequestID(ctx)
+		id := request.OutgoingRequestID(ctx)
 		assert.Equal(requestID.String(), id)
 
 		return nil
@@ -127,7 +133,7 @@ func TestUnaryClient(t *testing.T) {
 
 	ctx := header.ContextWithRequestID(context.Background(), requestID.String())
 
-	err = NewRequestIDMiddleware().UnaryClient()(ctx, "method", "req", "rep", nil, unaryInvoker)
+	err = request.NewRequestIDMiddleware().UnaryClient()(ctx, "method", "req", "rep", nil, unaryInvoker)
 	assert.NoError(err)
 }
 
@@ -137,7 +143,7 @@ func TestStreamClient(t *testing.T) {
 	assert.NoError(err)
 
 	streamer := func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, opts ...grpc.CallOption) (grpc.ClientStream, error) {
-		id := OutgoingRequestID(ctx)
+		id := request.OutgoingRequestID(ctx)
 		assert.Equal(requestID.String(), id)
 
 		return nil, nil
@@ -145,7 +151,7 @@ func TestStreamClient(t *testing.T) {
 
 	ctx := header.ContextWithRequestID(context.Background(), requestID.String())
 
-	_, err = NewRequestIDMiddleware().StreamClient()(ctx, nil, nil, "method", streamer)
+	_, err = request.NewRequestIDMiddleware().StreamClient()(ctx, nil, nil, "method", streamer)
 	assert.NoError(err)
 }
 
@@ -165,7 +171,7 @@ func TestStreamServerWithoutRequestID(t *testing.T) {
 	ctx := grpc.NewContextWithServerTransportStream(context.Background(), test.ServerTransportStream(""))
 	testStream := test.ServerStream(ctx)
 
-	err := NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
+	err := request.NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -194,7 +200,7 @@ func TestStreamServerWithRequestID(t *testing.T) {
 	ctx = grpc.NewContextWithServerTransportStream(ctx, test.ServerTransportStream(""))
 	testStream := test.ServerStream(ctx)
 
-	err = NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
+	err = request.NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -224,7 +230,7 @@ func TestStreamServerWithRequestIDChain(t *testing.T) {
 	ctx = grpc.NewContextWithServerTransportStream(ctx, test.ServerTransportStream(""))
 	testStream := test.ServerStream(ctx)
 
-	err = NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
+	err = request.NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -232,7 +238,7 @@ func TestStreamServerWithRequestIDChain(t *testing.T) {
 
 func TestStreamServerWithValidator(t *testing.T) {
 	assert := require.New(t)
-	requestID := "xyz"
+	requestID := testRequestID
 
 	streamHandler := func(srv interface{}, stream grpc.ServerStream) error {
 		gotRequestID := header.ExtractRequestID(stream.Context())
@@ -248,6 +254,6 @@ func TestStreamServerWithValidator(t *testing.T) {
 	ctx = grpc.NewContextWithServerTransportStream(ctx, test.ServerTransportStream(""))
 	testStream := test.ServerStream(ctx)
 
-	err := NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
+	err := request.NewRequestIDMiddleware().Stream()(testService, testStream, streamInfo, streamHandler)
 	assert.NoError(err)
 }

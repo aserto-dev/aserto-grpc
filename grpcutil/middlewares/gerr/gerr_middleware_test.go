@@ -1,10 +1,11 @@
-package gerr
+package gerr_test
 
 import (
 	"bytes"
 	"net/http"
 	"testing"
 
+	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/gerr"
 	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
 	aerr "github.com/aserto-dev/errors"
 	"github.com/aserto-dev/logger"
@@ -28,7 +29,7 @@ func TestUnaryServerWithWrappedError(t *testing.T) {
 		test.RequestIDContext(t),
 		test.ServerTransportStream(""),
 	)
-	_, err := NewErrorMiddleware().Unary()(ctx, "xyz", test.UnaryInfo, handler.Unary)
+	_, err := gerr.NewErrorMiddleware().Unary()(ctx, "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
 	assert.Contains(err.Error(), "a test error")
 }
@@ -48,7 +49,7 @@ func TestUnaryServerWithFields(t *testing.T) {
 		test.ServerTransportStream(""),
 	)
 
-	_, err := NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
+	_, err := gerr.NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
 
 	logOutput := buf.String()
@@ -71,7 +72,7 @@ func TestUnaryServerWithDoubleCerr(t *testing.T) {
 		test.ServerTransportStream(""),
 	)
 
-	_, err := NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
+	_, err := gerr.NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
 
 	logOutput := buf.String()
@@ -92,7 +93,7 @@ func TestSimpleInnerError(t *testing.T) {
 		test.ServerTransportStream(""),
 	)
 
-	_, err := NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
+	_, err := gerr.NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
 
 	logOutput := buf.String()
@@ -115,14 +116,14 @@ func TestDirectResult(t *testing.T) {
 		test.ServerTransportStream(""),
 	)
 
-	_, err := NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
+	_, err := gerr.NewErrorMiddleware().Unary()(testLogger.WithContext(ctx), "xyz", test.UnaryInfo, handler.Unary)
 	assert.Error(err)
 
 	s := status.Convert(err)
 
 	errDetailsFound := false
 	for _, detail := range s.Details() {
-		switch t := detail.(type) {
+		switch t := detail.(type) { //nolint: gocritic
 		case *errdetails.ErrorInfo:
 			errDetailsFound = true
 			assert.Contains(t.Metadata, "msg")
