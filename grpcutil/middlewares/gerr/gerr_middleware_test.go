@@ -133,5 +133,6 @@ func TestDirectResult(t *testing.T) {
 
 	assert.True(errDetailsFound)
 	assert.Contains(s.Message(), "an unknown error has occurred")
+	assert.Contains(s.Message(), "failed to setup initial tag")
 	assert.Contains(err.Error(), "failed to setup initial tag")
 }

@@ -62,7 +62,10 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 		return status.New(codes.Internal, "internal failure to generate an error id, please contact the administrator").Err()
 	}
 
-	asertoErr := errors.UnwrapAsertoError(handlerErr)
+	asertoErr, ok := handlerErr.(*errors.AsertoError)
+	if !ok {
+		asertoErr = errors.UnwrapAsertoError(handlerErr)
+	}
 
 	if asertoErr == nil {
 		asertoErr = errors.ErrUnknown
