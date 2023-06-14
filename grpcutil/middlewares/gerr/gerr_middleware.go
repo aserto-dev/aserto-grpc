@@ -54,7 +54,6 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 		fmt.Printf("ERROR - ZEROLOG LOGGER MISSING FROM CONTEXT: %v\n", handlerErr)
 		return status.New(codes.Internal, "internal logging error, please contact the administrator").Err()
 	}
-	log = grpcutil.CompleteLogger(ctx, log)
 
 	errID, err := uuid.NewUUID()
 	if err != nil {
