@@ -71,12 +71,21 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 	}
 	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
 
-	log.Warn().Stack().Err(handlerErr).
-		Str("error-id", errID.String()).
-		Str("error-code", asertoErr.Code).
-		Int("status-code", int(asertoErr.StatusCode)).
-		Fields(asertoErr.Fields()).
-		Msg(asertoErr.Message)
+	if asertoErr.HTTPCode >= 300 && asertoErr.HTTPCode < 400 {
+		log.Debug().
+			Str("error-id", errID.String()).
+			Str("error-code", asertoErr.Code).
+			Int("status-code", int(asertoErr.StatusCode)).
+			Fields(asertoErr.Fields()).
+			Msg(asertoErr.Message)
+	} else {
+		log.Warn().Stack().Err(handlerErr).
+			Str("error-id", errID.String()).
+			Str("error-code", asertoErr.Code).
+			Int("status-code", int(asertoErr.StatusCode)).
+			Fields(asertoErr.Fields()).
+			Msg(asertoErr.Message)
+	}
 
 	errResult := status.New(asertoErr.StatusCode, asertoErr.Error())
 	errResult, err = errResult.WithDetails(&errdetails.ErrorInfo{
