@@ -12,23 +12,17 @@ import (
 )
 
 type TracingMiddleware struct {
-	logger *zerolog.Logger
 }
 
-func NewTracingMiddleware(logger *zerolog.Logger) *TracingMiddleware {
-	return &TracingMiddleware{
-		logger: logger,
-	}
+func NewTracingMiddleware() *TracingMiddleware {
+	return &TracingMiddleware{}
 }
 
 var _ grpcutil.Middleware = &TracingMiddleware{}
 
 func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		method, _ := grpc.Method(ctx)
-
-		apiLogger := m.logger.With().
-			Str("method", method).
+		apiLogger := zerolog.Ctx(ctx).With().
 			Fields(header.KnownContextValueStrings(ctx)).
 			Logger()
 
@@ -47,9 +41,8 @@ func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 func (m *TracingMiddleware) Stream() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
-		method, _ := grpc.Method(ctx)
 
-		apiLogger := m.logger.With().Str("method", method).Logger()
+		apiLogger := zerolog.Ctx(ctx)
 
 		apiLogger.Trace().
 			Fields(header.KnownContextValueStrings(ctx)).

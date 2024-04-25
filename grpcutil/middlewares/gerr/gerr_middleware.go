@@ -72,6 +72,7 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
 
 	log.Warn().Stack().Err(handlerErr).
+		Ctx(ctx).
 		Str("error-id", errID.String()).
 		Str("error-code", asertoErr.Code).
 		Int("status-code", int(asertoErr.StatusCode)).
