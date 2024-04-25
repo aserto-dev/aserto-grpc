@@ -40,8 +40,7 @@ var _ grpcutil.Middleware = &LoggingMiddleware{}
 
 func (m *LoggingMiddleware) Unary() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		apiLogger := m.logger.With().
-			Logger().Hook(TracingHook{})
+		apiLogger := m.logger.Hook(TracingHook{})
 		apiLoggerCtx := apiLogger.WithContext(ctx)
 
 		result, err := handler(apiLoggerCtx, req)
@@ -53,8 +52,7 @@ func (m *LoggingMiddleware) Unary() grpc.UnaryServerInterceptor {
 func (m *LoggingMiddleware) Stream() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
-		apiLogger := m.logger.With().
-			Logger().Hook(TracingHook{})
+		apiLogger := m.logger.Hook(TracingHook{})
 		apiLoggerCtx := apiLogger.WithContext(ctx)
 
 		wrapped := grpcmiddleware.WrapServerStream(stream)
