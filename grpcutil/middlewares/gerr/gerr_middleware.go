@@ -69,6 +69,12 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 	if asertoErr == nil {
 		asertoErr = errors.ErrUnknown
 	}
+
+	errorCtx := asertoErr.Ctx
+	if errorCtx != nil {
+		log = zerolog.Ctx(asertoErr.Ctx)
+	}
+
 	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
 
 	log.Warn().Stack().Err(handlerErr).

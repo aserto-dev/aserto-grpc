@@ -24,7 +24,7 @@ func (h tracingHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
 
 	serviceMethod, ok := grpc.Method(ctx)
 	if ok {
-		e.Str("service", serviceMethod)
+		e.Str("method", serviceMethod)
 	}
 }
 
