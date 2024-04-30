@@ -70,9 +70,9 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 		asertoErr = errors.ErrUnknown
 	}
 
-	errorCtx := asertoErr.Ctx
-	if errorCtx != nil {
-		log = zerolog.Ctx(asertoErr.Ctx)
+	errorLogger := errors.Logger(handlerErr)
+	if errorLogger != nil {
+		log = errorLogger
 	}
 
 	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
