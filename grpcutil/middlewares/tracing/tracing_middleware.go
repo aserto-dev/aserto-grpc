@@ -38,7 +38,7 @@ var _ grpcutil.Middleware = &TracingMiddleware{}
 
 func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		logger := m.logger.Hook(tracingHook{}).With().Ctx(ctx).Logger()
+		logger := m.logger.Hook(tracingHook{}).With().Interface("req", req).Ctx(ctx).Logger()
 		loggerCtx := logger.WithContext(ctx)
 
 		logger.Trace().Interface("request", req).Msg("grpc call start")
