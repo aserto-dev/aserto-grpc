@@ -25,9 +25,7 @@ func (h tracingHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
 	serviceMethod, ok := grpc.Method(ctx)
 	if ok {
 		e.Str("method", serviceMethod)
-
 	}
-
 }
 
 func NewTracingMiddleware(logger *zerolog.Logger) *TracingMiddleware {
@@ -41,12 +39,12 @@ var _ grpcutil.Middleware = &TracingMiddleware{}
 func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		logger := m.logger.Hook(tracingHook{}).With().Interface("request", req).Ctx(ctx).Logger()
-		loggerCtx := logger.WithContext(ctx)
+		ctx = logger.WithContext(ctx)
 
 		logger.Trace().Msg("grpc call start")
 
 		start := time.Now()
-		result, err := handler(loggerCtx, req)
+		result, err := handler(ctx, req)
 		logger.Trace().Dur("duration-ms", time.Since(start)).Msg("grpc call end")
 
 		return result, err
@@ -57,12 +55,12 @@ func (m *TracingMiddleware) Stream() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		logger := m.logger.Hook(tracingHook{}).With().Ctx(ctx).Logger()
-		loggerCtx := logger.WithContext(ctx)
+		ctx = logger.WithContext(ctx)
 
 		logger.Trace().Msg("grpc stream call")
 
 		wrapped := grpcmiddleware.WrapServerStream(stream)
-		wrapped.WrappedContext = loggerCtx
+		wrapped.WrappedContext = ctx
 
 		return handler(srv, wrapped)
 	}
