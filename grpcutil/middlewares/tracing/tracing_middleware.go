@@ -2,15 +2,12 @@ package tracing
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/aserto-dev/aserto-grpc/grpcutil"
 	"github.com/aserto-dev/header"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/rs/zerolog"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"google.golang.org/grpc"
 )
 
@@ -27,21 +24,6 @@ func (h tracingHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
 
 	serviceMethod, ok := grpc.Method(ctx)
 	if ok {
-		service := strings.SplitN(serviceMethod, "/", 2)[1]
-		serviceArr := strings.Split(service, ".")[1:4]
-		var serviceArrCap []string
-		for _, s := range serviceArr {
-			serviceArrCap = append(serviceArrCap, cases.Title(language.English, cases.Compact).String(s))
-		}
-		var serviceBuilder strings.Builder
-		for _, s := range serviceArrCap {
-			serviceBuilder.WriteString(s)
-		}
-		service = serviceBuilder.String()
-		if len(service) > 0 {
-			e.Str("service", service)
-		}
-
 		e.Str("method", serviceMethod)
 
 	}
