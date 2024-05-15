@@ -15,8 +15,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type ErrorMiddleware struct {
-}
+type ErrorMiddleware struct{}
 
 func NewErrorMiddleware() *ErrorMiddleware {
 	return &ErrorMiddleware{}
@@ -50,6 +49,10 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 	}
 
 	log := zerolog.Ctx(ctx)
+	if errorLogger := errors.Logger(handlerErr); errorLogger != nil {
+		log = errorLogger
+	}
+
 	if log == nil {
 		fmt.Printf("ERROR - ZEROLOG LOGGER MISSING FROM CONTEXT: %v\n", handlerErr)
 		return status.New(codes.Internal, "internal logging error, please contact the administrator").Err()
@@ -68,11 +71,6 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 
 	if asertoErr == nil {
 		asertoErr = errors.ErrUnknown
-	}
-
-	errorLogger := errors.Logger(handlerErr)
-	if errorLogger != nil {
-		log = errorLogger
 	}
 
 	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
