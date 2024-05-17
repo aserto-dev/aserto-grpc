@@ -15,6 +15,19 @@ type TracingMiddleware struct {
 	logger *zerolog.Logger
 }
 
+type tracingHook struct{}
+
+func (h tracingHook) Run(e *zerolog.Event, level zerolog.Level, msg string) {
+	ctx := e.GetCtx()
+
+	e.Fields(header.KnownContextValueStrings(ctx))
+
+	serviceMethod, ok := grpc.Method(ctx)
+	if ok {
+		e.Str("method", serviceMethod)
+	}
+}
+
 func NewTracingMiddleware(logger *zerolog.Logger) *TracingMiddleware {
 	return &TracingMiddleware{
 		logger: logger,
@@ -25,20 +38,14 @@ var _ grpcutil.Middleware = &TracingMiddleware{}
 
 func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		method, _ := grpc.Method(ctx)
+		logger := m.logger.Hook(tracingHook{}).With().Interface("request", req).Ctx(ctx).Logger()
+		ctx = logger.WithContext(ctx)
 
-		apiLogger := m.logger.With().
-			Str("method", method).
-			Fields(header.KnownContextValueStrings(ctx)).
-			Logger()
-
-		apiLogger.Trace().Interface("request", req).Msg("grpc call start")
-
-		newCtx := apiLogger.WithContext(ctx)
+		logger.Trace().Msg("grpc call start")
 
 		start := time.Now()
-		result, err := handler(newCtx, req)
-		apiLogger.Trace().Dur("duration-ms", time.Since(start)).Msg("grpc call end")
+		result, err := handler(ctx, req)
+		logger.Trace().Dur("duration-ms", time.Since(start)).Msg("grpc call end")
 
 		return result, err
 	}
@@ -47,18 +54,13 @@ func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 func (m *TracingMiddleware) Stream() grpc.StreamServerInterceptor {
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
-		method, _ := grpc.Method(ctx)
+		logger := m.logger.Hook(tracingHook{}).With().Ctx(ctx).Logger()
+		ctx = logger.WithContext(ctx)
 
-		apiLogger := m.logger.With().Str("method", method).Logger()
-
-		apiLogger.Trace().
-			Fields(header.KnownContextValueStrings(ctx)).
-			Msg("grpc stream call")
-
-		newCtx := apiLogger.WithContext(ctx)
+		logger.Trace().Msg("grpc stream call")
 
 		wrapped := grpcmiddleware.WrapServerStream(stream)
-		wrapped.WrappedContext = newCtx
+		wrapped.WrappedContext = ctx
 
 		return handler(srv, wrapped)
 	}
