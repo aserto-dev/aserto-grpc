@@ -5,7 +5,7 @@ go 1.19
 // replace github.com/aserto-dev/errors => ../errors
 
 require (
-	github.com/aserto-dev/errors v0.0.8-0.20240430105517-e34572ccf683
+	github.com/aserto-dev/errors v0.0.8
 	github.com/aserto-dev/go-aserto v0.20.3
 	github.com/aserto-dev/header v0.0.5
 	github.com/aserto-dev/logger v0.0.3
