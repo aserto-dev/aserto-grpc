@@ -1,2 +1,2 @@
 # aserto-grpc
-GRPC middlewares and configurations
+gRPC middlewares and configurations
