@@ -5,10 +5,10 @@ go 1.22
 // replace github.com/aserto-dev/errors => ../errors
 
 require (
-	github.com/aserto-dev/errors v0.0.10
-	github.com/aserto-dev/go-aserto v0.31.6-0.20240808135743-1397b90e425d
-	github.com/aserto-dev/header v0.0.7
-	github.com/aserto-dev/logger v0.0.4
+	github.com/aserto-dev/errors v0.0.11
+	github.com/aserto-dev/go-aserto v0.32.0
+	github.com/aserto-dev/header v0.0.8
+	github.com/aserto-dev/logger v0.0.5
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
@@ -17,7 +17,7 @@ require (
 	github.com/rs/zerolog v1.33.0
 	github.com/stretchr/testify v1.9.0
 	go.opencensus.io v0.24.0
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240808171019-573a1156607a
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240812133136-8ffd90a71988
 	google.golang.org/grpc v1.65.0
 )
 
@@ -35,11 +35,11 @@ require (
 	github.com/prometheus/client_model v0.5.0 // indirect
 	github.com/prometheus/common v0.48.0 // indirect
 	github.com/prometheus/procfs v0.12.0 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/text v0.17.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20240730163845-b1a4ccb954bf // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240812133136-8ffd90a71988 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
