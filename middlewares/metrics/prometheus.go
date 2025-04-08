@@ -4,12 +4,12 @@ import (
 	grpc_prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"google.golang.org/grpc"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil"
-	config "github.com/aserto-dev/aserto-grpc/grpcutil/metrics"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
+	config "github.com/aserto-dev/aserto-grpc/metrics"
 )
 
 func NewMiddlewares(conf config.Config, middlewares ...grpcutil.Middleware) grpcutil.Middlewares {
-	if !(conf.GRPC.Counters || conf.GRPC.Durations) {
+	if !conf.GRPC.Counters && !conf.GRPC.Durations {
 		// Don't include grpc middleware if counters and durations are disabled.
 		return middlewares
 	}

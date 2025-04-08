@@ -7,7 +7,7 @@ type GRPCConfig struct {
 }
 
 func (p GRPCConfig) AllDisabled() bool {
-	return !(p.Counters || p.Durations || p.Gateway)
+	return !p.Counters && !p.Durations && !p.Gateway
 }
 
 // Config defined configuration format for diagnostics and performance metrics.

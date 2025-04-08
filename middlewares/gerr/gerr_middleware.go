@@ -2,13 +2,13 @@ package gerr
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil"
-	"github.com/aserto-dev/errors"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
+	aerr "github.com/aserto-dev/errors"
 	"github.com/google/uuid"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/rs/zerolog"
+	zlog "github.com/rs/zerolog/log"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -24,14 +24,14 @@ func NewErrorMiddleware() *ErrorMiddleware {
 var _ grpcutil.Middleware = &ErrorMiddleware{}
 
 func (m *ErrorMiddleware) Unary() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		result, handlerErr := handler(ctx, req)
 		return result, m.handleError(ctx, handlerErr)
 	}
 }
 
 func (m *ErrorMiddleware) Stream() grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 
 		wrapped := grpcmiddleware.WrapServerStream(stream)
@@ -49,12 +49,12 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 	}
 
 	log := zerolog.Ctx(ctx)
-	if errorLogger := errors.Logger(handlerErr); errorLogger != nil {
+	if errorLogger := aerr.Logger(handlerErr); errorLogger != nil {
 		log = errorLogger
 	}
 
 	if log == nil {
-		fmt.Printf("ERROR - ZEROLOG LOGGER MISSING FROM CONTEXT: %v\n", handlerErr)
+		zlog.Error().Msgf("ERROR - ZEROLOG LOGGER MISSING FROM CONTEXT: %v\n", handlerErr)
 		return status.New(codes.Internal, "internal logging error, please contact the administrator").Err()
 	}
 
@@ -64,16 +64,12 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 		return status.New(codes.Internal, "internal failure to generate an error id, please contact the administrator").Err()
 	}
 
-	asertoErr, ok := handlerErr.(*errors.AsertoError)
-	if !ok {
-		asertoErr = errors.UnwrapAsertoError(handlerErr)
-	}
-
+	asertoErr := aerr.UnwrapAsertoError(handlerErr)
 	if asertoErr == nil {
-		asertoErr = errors.ErrUnknown
+		asertoErr = aerr.ErrUnknown
 	}
 
-	asertoErr = asertoErr.Int(errors.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
+	asertoErr = asertoErr.Int(aerr.HTTPStatusErrorMetadata, asertoErr.HTTPCode)
 
 	log.Warn().Stack().Err(handlerErr).
 		Ctx(ctx).
@@ -84,6 +80,7 @@ func (m *ErrorMiddleware) handleError(ctx context.Context, handlerErr error) err
 		Msg(asertoErr.Message)
 
 	errResult := status.New(asertoErr.StatusCode, asertoErr.Error())
+
 	errResult, err = errResult.WithDetails(&errdetails.ErrorInfo{
 		Reason:   errID.String(),
 		Metadata: asertoErr.Data(),

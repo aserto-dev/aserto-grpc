@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
 	"github.com/aserto-dev/header"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/rs/zerolog"
@@ -37,7 +37,7 @@ func NewTracingMiddleware(logger *zerolog.Logger) *TracingMiddleware {
 var _ grpcutil.Middleware = &TracingMiddleware{}
 
 func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		logger := m.logger.Hook(tracingHook{}).With().Interface("request", req).Ctx(ctx).Logger()
 		ctx = logger.WithContext(ctx)
 
@@ -45,6 +45,7 @@ func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 
 		start := time.Now()
 		result, err := handler(ctx, req)
+
 		logger.Trace().Dur("duration-ms", time.Since(start)).Msg("grpc call end")
 
 		return result, err
@@ -52,7 +53,7 @@ func (m *TracingMiddleware) Unary() grpc.UnaryServerInterceptor {
 }
 
 func (m *TracingMiddleware) Stream() grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
 		logger := m.logger.Hook(tracingHook{}).With().Ctx(ctx).Logger()
 		ctx = logger.WithContext(ctx)

@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/gerr"
-	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
+	"github.com/aserto-dev/aserto-grpc/middlewares/gerr"
+	"github.com/aserto-dev/aserto-grpc/middlewares/test"
 	aerr "github.com/aserto-dev/errors"
 	"github.com/aserto-dev/logger"
 	"github.com/pkg/errors"
@@ -17,13 +17,11 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-var (
-	testError = aerr.NewAsertoError("X00000", codes.Internal, http.StatusInternalServerError, "a test error")
-)
+var errTest = aerr.NewAsertoError("X00000", codes.Internal, http.StatusInternalServerError, "a test error")
 
 func TestUnaryServerWithWrappedError(t *testing.T) {
 	assert := require.New(t)
-	handler := test.NewHandler("output", errors.Wrap(testError, "unimportant error"))
+	handler := test.NewHandler("output", errors.Wrap(errTest, "unimportant error"))
 
 	ctx := grpc.NewContextWithServerTransportStream(
 		test.RequestIDContext(t),
@@ -38,7 +36,7 @@ func TestUnaryServerWithFields(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		errors.Wrap(testError.Str("my-field", "deadbeef"), "another error"),
+		errors.Wrap(errTest.Str("my-field", "deadbeef"), "another error"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -61,7 +59,7 @@ func TestUnaryServerWithDoubleCerr(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		aerr.ErrUnknown.Err(testError.Str("my-field", "deadbeef").Msg("old message")).Msg("new message"),
+		aerr.ErrUnknown.Err(errTest.Str("my-field", "deadbeef").Msg("old message")).Msg("new message"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -105,7 +103,7 @@ func TestDirectResult(t *testing.T) {
 	assert := require.New(t)
 	handler := test.NewHandler(
 		"output",
-		aerr.ErrUnknown.Err(testError).Msg("failed to setup initial tag"),
+		aerr.ErrUnknown.Err(errTest).Msg("failed to setup initial tag"),
 	)
 
 	buf := bytes.NewBufferString("")
@@ -120,14 +118,15 @@ func TestDirectResult(t *testing.T) {
 	assert.Error(err)
 
 	s := status.Convert(err)
-
 	errDetailsFound := false
+
 	for _, detail := range s.Details() {
 		switch t := detail.(type) { //nolint: gocritic
 		case *errdetails.ErrorInfo:
 			errDetailsFound = true
-			assert.Contains(t.Metadata, "msg")
-			assert.Contains(t.Metadata["msg"], "failed to setup")
+
+			assert.Contains(t.GetMetadata(), "msg")
+			assert.Contains(t.GetMetadata()["msg"], "failed to setup")
 		}
 	}
 

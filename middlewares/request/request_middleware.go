@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	public_grpcutil "github.com/aserto-dev/aserto-grpc/grpcutil"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
 	"github.com/aserto-dev/header"
 	"github.com/google/uuid"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -20,7 +20,7 @@ func NewRequestIDMiddleware() *RequestIDMiddleware {
 	return &RequestIDMiddleware{}
 }
 
-var _ public_grpcutil.Middleware = &RequestIDMiddleware{}
+var _ grpcutil.Middleware = &RequestIDMiddleware{}
 
 // Unary returns a new unary server interceptor that creates a request ID
 // and sets it on the context.
@@ -30,7 +30,7 @@ var _ public_grpcutil.Middleware = &RequestIDMiddleware{}
 // from the context, or use metadata.AppendToOutgoingContext with the context available in
 // GRPC handlers.
 func (m *RequestIDMiddleware) Unary() grpc.UnaryServerInterceptor {
-	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
+	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
 		id, err := m.requestID(ctx)
 		if err != nil {
 			return nil, err
@@ -46,6 +46,7 @@ func (m *RequestIDMiddleware) Unary() grpc.UnaryServerInterceptor {
 		}
 
 		result, err := handler(newCtx, req)
+
 		return result, err
 	}
 }
@@ -58,8 +59,9 @@ func (m *RequestIDMiddleware) Unary() grpc.UnaryServerInterceptor {
 // from the context, or use metadata.AppendToOutgoingContext with the context available in
 // GRPC handlers.
 func (m *RequestIDMiddleware) Stream() grpc.StreamServerInterceptor {
-	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	return func(srv any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		ctx := stream.Context()
+
 		id, err := m.requestID(ctx)
 		if err != nil {
 			return err
@@ -76,6 +78,7 @@ func (m *RequestIDMiddleware) Stream() grpc.StreamServerInterceptor {
 
 		wrapped := grpcmiddleware.WrapServerStream(stream)
 		wrapped.WrappedContext = newCtx
+
 		return handler(srv, wrapped)
 	}
 }
@@ -86,7 +89,7 @@ func (m *RequestIDMiddleware) UnaryClient() grpc.UnaryClientInterceptor {
 	return func(
 		ctx context.Context,
 		method string,
-		req, reply interface{},
+		req, reply any,
 		cc *grpc.ClientConn,
 		invoker grpc.UnaryInvoker,
 		opts ...grpc.CallOption,
