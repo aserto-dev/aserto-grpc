@@ -11,7 +11,9 @@ import (
 
 func RequestIDContext(t *testing.T) context.Context {
 	assert := require.New(t)
+
 	id, err := uuid.NewUUID()
 	assert.NoError(err)
+
 	return context.WithValue(context.Background(), header.HeaderAsertoRequestID, id)
 }

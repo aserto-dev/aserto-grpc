@@ -9,7 +9,7 @@ import (
 )
 
 func NewMiddlewares(conf config.Config, middlewares ...grpcutil.Middleware) grpcutil.Middlewares {
-	if !(conf.GRPC.Counters || conf.GRPC.Durations) {
+	if !conf.GRPC.Counters && !conf.GRPC.Durations {
 		// Don't include grpc middleware if counters and durations are disabled.
 		return middlewares
 	}

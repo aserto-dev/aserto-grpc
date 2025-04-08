@@ -18,19 +18,22 @@ func ServerTransportStream(method string) *TestServerTransportStream {
 func (ts *TestServerTransportStream) Method() string {
 	return ts.method
 }
+
 func (ts *TestServerTransportStream) SetHeader(md metadata.MD) error {
 	return nil
 }
+
 func (ts *TestServerTransportStream) SendHeader(md metadata.MD) error {
 	return nil
 }
+
 func (ts *TestServerTransportStream) SetTrailer(md metadata.MD) error {
 	return nil
 }
 
 type TestServerStream struct {
 	grpc.ServerStream
-	ctx context.Context
+	ctx context.Context //nolint:containedctx
 }
 
 func ServerStream(ctx context.Context) *TestServerStream {
@@ -41,11 +44,11 @@ func (ts *TestServerStream) Context() context.Context {
 	return ts.ctx
 }
 
-func (ts *TestServerStream) SendMsg(m interface{}) error {
+func (ts *TestServerStream) SendMsg(m any) error {
 	return nil
 }
 
-func (ts *TestServerStream) RecvMsg(m interface{}) error {
+func (ts *TestServerStream) RecvMsg(m any) error {
 	return nil
 }
 

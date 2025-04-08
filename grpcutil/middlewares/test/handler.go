@@ -19,18 +19,18 @@ var (
 )
 
 type Handler struct {
-	output interface{}
+	output any
 	err    error
 }
 
-func NewHandler(output interface{}, err error) *Handler {
+func NewHandler(output any, err error) *Handler {
 	return &Handler{output, err}
 }
 
-func (h *Handler) Unary(ctx context.Context, req interface{}) (interface{}, error) {
+func (h *Handler) Unary(ctx context.Context, req any) (any, error) { //nolint:ireturn  // grpc.UnaryServerInterceptor
 	return h.output, h.err
 }
 
-func (h *Handler) Stream(srv interface{}, stream grpc.ServerStream) error {
+func (h *Handler) Stream(srv any, stream grpc.ServerStream) error {
 	return h.err
 }
