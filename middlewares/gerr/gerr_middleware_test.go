@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/gerr"
-	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
+	"github.com/aserto-dev/aserto-grpc/middlewares/gerr"
+	"github.com/aserto-dev/aserto-grpc/middlewares/test"
 	aerr "github.com/aserto-dev/errors"
 	"github.com/aserto-dev/logger"
 	"github.com/pkg/errors"

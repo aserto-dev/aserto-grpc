@@ -3,7 +3,7 @@ package gerr
 import (
 	"context"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
 	aerr "github.com/aserto-dev/errors"
 	"github.com/google/uuid"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"

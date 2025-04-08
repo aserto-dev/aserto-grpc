@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/request"
-	"github.com/aserto-dev/aserto-grpc/grpcutil/middlewares/test"
+	"github.com/aserto-dev/aserto-grpc/middlewares/request"
+	"github.com/aserto-dev/aserto-grpc/middlewares/test"
 	"github.com/aserto-dev/header"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/aserto-dev/aserto-grpc/grpcutil"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
 	"github.com/aserto-dev/header"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	"github.com/rs/zerolog"

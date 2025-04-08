@@ -4,7 +4,7 @@ import (
 	"context"
 	"strings"
 
-	public_grpcutil "github.com/aserto-dev/aserto-grpc/grpcutil"
+	grpcutil "github.com/aserto-dev/aserto-grpc"
 	"github.com/aserto-dev/header"
 	"github.com/google/uuid"
 	grpcmiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
@@ -20,7 +20,7 @@ func NewRequestIDMiddleware() *RequestIDMiddleware {
 	return &RequestIDMiddleware{}
 }
 
-var _ public_grpcutil.Middleware = &RequestIDMiddleware{}
+var _ grpcutil.Middleware = &RequestIDMiddleware{}
 
 // Unary returns a new unary server interceptor that creates a request ID
 // and sets it on the context.
