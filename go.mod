@@ -5,9 +5,9 @@ go 1.23.0
 // replace github.com/aserto-dev/errors => ../errors
 
 require (
-	github.com/aserto-dev/errors v0.0.17-0.20250408202139-4b678c984637
+	github.com/aserto-dev/errors v0.0.17
 	github.com/aserto-dev/header v0.0.11
-	github.com/aserto-dev/logger v0.0.9-0.20250408201418-78cde944f7d6
+	github.com/aserto-dev/logger v0.0.9
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
